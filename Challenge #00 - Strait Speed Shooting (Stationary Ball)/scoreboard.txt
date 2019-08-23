@@ -1,0 +1,2 @@
+python_example = 0.0
+SimpleBot = -1818.1818181818182
