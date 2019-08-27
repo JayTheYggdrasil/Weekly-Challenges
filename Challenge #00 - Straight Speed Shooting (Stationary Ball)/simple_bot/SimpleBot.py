@@ -7,4 +7,6 @@ class Simple(BaseAgent):
         pass
 
     def get_output(self, packet: GameTickPacket) -> SimpleControllerState:
-        return SimpleControllerState()
+        control = SimpleControllerState()
+        control.throttle = 1
+        return control
