@@ -12,7 +12,7 @@ import os
 def run_bots():
     seed: int = int(input("Choose a Seed: "))
     random.seed(seed)
-    runs = 10
+    runs = 2
     bots: List[Tuple[str]] = find_bots()
     with open("scoreboard.txt", "w+") as scorefile:
         print("file opened")
@@ -28,8 +28,8 @@ def run_bots():
                     scoreboard[bot_info[0]] = 0
                 scoreboard[bot_info[0]] += result.grade.score
         for bot_name, path in bots:
-            entry = bot_name + " = " + str(scoreboard[bot_name]/(runs+1))
-            print(bot_name + " got an average score of:", scoreboard[bot_name]/(runs+1))
+            entry = bot_name + " = " + str(scoreboard[bot_name]/runs)
+            print(bot_name + " got an average score of:", scoreboard[bot_name]/runs)
             scorefile.write(entry + "\n")
 
 def find_bots() -> List[Tuple[str, str]]:

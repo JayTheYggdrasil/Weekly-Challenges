@@ -21,13 +21,13 @@ class SimpleGrader(Grader):
         self.time = None
         self.score_me = None
         self.score_enemy = None
+        self.last_speed = 0
 
     def on_tick(self, training_packet: TrainingTickPacket):
         packet: GameTickPacket = training_packet.game_tick_packet
         my_car = packet.game_cars[0].physics
         team = packet.game_cars[0].team
         ball = packet.game_ball.physics
-        # print("Rotation", my_car.rotation)
         if self.time == None:
             self.time = packet.game_info.seconds_elapsed
         if self.score_me == None:
@@ -35,13 +35,16 @@ class SimpleGrader(Grader):
         if self.score_enemy == None:
             self.score_enemy = packet.teams[(team - 1)*-1].score
         if packet.game_info.seconds_elapsed - self.time > self.timer:
-            return ScoredFail(-2000)
+            return ScoredFail(-1000)
         if self.score_me < packet.teams[team].score:
-            return ScoredPass(score = magnitude(ball.velocity))
+            print("FINAL VELOCITY -------------- ", self.last_speed)
+            return ScoredPass(self.last_speed)
         if self.score_enemy < packet.teams[(team - 1)*-1].score:
-            return ScoredFail(-2000)
+            return ScoredFail(-1000)
+        if magnitude(ball.velocity) > 0:
+            self.last_speed = magnitude(ball.velocity)
         return None
-
+        
     def render(self, renderer: RenderingManager):
         pass
 
