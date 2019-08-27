@@ -9,6 +9,4 @@
 # TODO
  Add visual indicators of scores while in devoloper mode
  
- Testing with non python bots
- 
  More challenges
