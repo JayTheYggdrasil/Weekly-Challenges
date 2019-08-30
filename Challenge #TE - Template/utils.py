@@ -122,10 +122,10 @@ class CompositeArea(Area):
         return point
 
 class Info:
-    def __init__(self, team: int):
+    def __init__(self, team: int, packet: GameTickPacket):
         self.team: int = team
-        self.score_me: int = 0
-        self.score_enemy: int = 0
+        self.score_me: int = packet.teams[self.team].score
+        self.score_enemy: int = packet.teams[(self.team - 1)*-1].score
         self.scored_me: bool = False
         self.scored_enemy: bool = False
 

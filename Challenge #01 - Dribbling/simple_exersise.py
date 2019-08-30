@@ -16,7 +16,9 @@ import utils
 
 class SimpleGrader(Grader):
     def __init__(self):
-        self.fail_area: utils.RectPrism = utils.RectPrism(Vector3(0, 0, 0), 10000, 10000, 95)
+        self.fail_area: utils.RectPrism = utils.RectPrism(Vector3(0, 0, 95/2), 10000, 10000, 95)
+        self.dribble_sphere: utils.Sphere = utils.Sphere(Vector3(0, 0, 0), 300)
+        self.reached = False
         self.max_speed: float = 0
         self.info: utils.Info = None
 
@@ -25,18 +27,28 @@ class SimpleGrader(Grader):
         my_car = packet.game_cars[0].physics
         team = packet.game_cars[0].team
         ball = packet.game_ball.physics
+        self.dribble_sphere.center = my_car.location
         if self.info == None:
-            self.info: utils.Info = utils.Info(team)
+            self.info: utils.Info = utils.Info(team, packet)
         self.info.update(packet)
-
+        #Keep track of the balls max speed for score
         if magnitude(my_car.velocity) > self.max_speed:
             self.max_speed = magnitude(my_car.velocity)
-        if self.fail_area.is_in(ball.location):
+        #Fail if ball is rolling on the ground
+        if self.fail_area.is_in(ball.location) and abs(ball.velocity.z) < 10:
             return ScoredFail(0)
+        #Fail if we've reached the ball but then thrown it away
+        if self.dribble_sphere.is_in(ball.location):
+            self.reached = True
+        elif self.reached:
+            return ScoredFail(0)
+        #Fail if we've put it in our own net
         if self.info.scored_enemy:
             return ScoredFail(0)
+        #Pass if we score on the enemy net
         if self.info.scored_me:
             return ScoredPass(self.max_speed)
+
 
     def render(self, renderer: RenderingManager):
         pass
@@ -73,10 +85,10 @@ class ScoredPass(Pass):
     def __init__(self, score = 0):
         self.score: float = score
     def __repr__(self):
-        return "Score of" + str(self.score)
+        return "Score of: " + str(self.score)
 
 class ScoredFail(Pass):
     def __init__(self, score = 0):
         self.score: float = score
     def __repr__(self):
-        return "Score of" + str(self.score)
+        return "Score of: " + str(self.score)
