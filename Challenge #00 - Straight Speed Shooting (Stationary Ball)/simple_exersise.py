@@ -44,7 +44,7 @@ class SimpleGrader(Grader):
         if magnitude(ball.velocity) > 0:
             self.last_speed = magnitude(ball.velocity)
         return None
-        
+
     def render(self, renderer: RenderingManager):
         pass
 
@@ -55,7 +55,7 @@ class SimpleExercise(TrainingExercise):
 
     def make_game_state(self, rng: SeededRandomNumberGenerator) -> GameState:
         enemy_goal_center: Vector3 = Vector3(0, 5120 * self.team, 93)
-        car_spawn_block: utils.Area = utils.RectPrism(Vector3(0, 0, 17), 8000, 0, 8000)
+        car_spawn_block: utils.Area = utils.RectPrism(Vector3(0, 0, 17), 8000, 8000, 0)
         car_loc: Vector3 = car_spawn_block.random_point_inside(rng)
         car_facing: Rotator = utils.rotator_from_dir(sub(enemy_goal_center, car_loc))
         relative: Vector3 = sub(enemy_goal_center, car_loc)

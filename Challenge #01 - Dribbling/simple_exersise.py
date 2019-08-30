@@ -14,17 +14,29 @@ from dataclasses import field, dataclass
 from utils import add, sub, magnitude
 import utils
 
-@dataclass
 class SimpleGrader(Grader):
     def __init__(self):
-        pass
+        self.fail_area: utils.RectPrism = utils.RectPrism(Vector3(0, 0, 0), 10000, 10000, 95)
+        self.max_speed: float = 0
+        self.info: utils.Info = None
 
     def on_tick(self, training_packet: TrainingTickPacket):
         packet: GameTickPacket = training_packet.game_tick_packet
         my_car = packet.game_cars[0].physics
         team = packet.game_cars[0].team
         ball = packet.game_ball.physics
-        pass
+        if self.info == None:
+            self.info: utils.Info = utils.Info(team)
+        self.info.update(packet)
+
+        if magnitude(my_car.velocity) > self.max_speed:
+            self.max_speed = magnitude(my_car.velocity)
+        if self.fail_area.is_in(ball.location):
+            return ScoredFail(0)
+        if self.info.scored_enemy:
+            return ScoredFail(0)
+        if self.info.scored_me:
+            return ScoredPass(self.max_speed)
 
     def render(self, renderer: RenderingManager):
         pass
@@ -35,20 +47,24 @@ class SimpleExercise(TrainingExercise):
     grader: Grader = field(default_factory=SimpleGrader)
 
     def make_game_state(self, rng: SeededRandomNumberGenerator) -> GameState:
-
+        car_spawn_area: utils.Area = utils.RectPrism(Vector3(0, 0, 17), 8000, 8000, 0)
+        ball_spawn_area: utils.Area = utils.RectPrism(Vector3(0, 0, 1000), 8000, 8000, 400)
+        ball_velocity_area: utils.Area = utils.Sphere(Vector3(0, 0, 0), 600)
+        ball_loc: Vector3 = ball_spawn_area.random_point_inside(rng)
+        car_loc: Vector3 = car_spawn_area.random_point_inside(rng)
         return GameState(
             ball=BallState(physics=Physics(
-                location=Vector3(0, 0, 400),
-                velocity=Vector3(0, 0, 0),
+                location=ball_loc,
+                velocity=ball_velocity_area.random_point_inside(rng),
                 angular_velocity=Vector3(0, 0, 0))),
             cars={
                 0: CarState(
                     physics=Physics(
-                        location=Vector3(0, 0, 20),
-                        rotation=Rotator(0, 0, 0),
+                        location=car_loc,
+                        rotation=utils.rotator_from_dir(sub(ball_loc, car_loc)),
                         velocity=Vector3(0, 0, 0),
                         angular_velocity=Vector3(0, 0, 0)),
-                    boost_amount=33),
+                    boost_amount=100),
             },
             boosts={i: BoostState(0) for i in range(34)},
         )
